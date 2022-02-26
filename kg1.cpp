@@ -1,9 +1,9 @@
 ﻿// 2 линии
 // + создать
 // + цвет
-// - подписать
-// - связать с клавой
-// - переместить
+// + подписать
+// + связать с клавой
+// + переместить
 // - повернуть
 // - масштабировать
 
@@ -11,12 +11,23 @@
 #include <math.h>
 #include "graphics.h"
 #pragma comment(lib,"graphics.lib")
+#define P 3.14
 
 using namespace std;
 
-// функция отрисовки линии попиксельно
-//#define roundf(x) floor((x) + 0,5f)
-void line_DDA(float x1, float y1, float x2, float y2, COLORREF cColor) {
+
+
+// класс для точек
+class Point {
+    public:
+        float x; float y;
+        void print(Point& point) { 
+            cout << point.x << point.y; 
+        }
+};
+
+// отрисовка линии попиксельно
+void line_DDA(float x1, float y1, float x2, float y2, COLORREF cColor, char* nameC, char* nameD) {
     // Целочисленные значения координат начала и конца отрезка, округлённые до ближайшего целого
     int iX1 = roundf(x1);
     int iY1 = roundf(y1);
@@ -43,6 +54,7 @@ void line_DDA(float x1, float y1, float x2, float y2, COLORREF cColor) {
     // Начальные значения
     double x = x1;
     double y = y1;
+    outtextxy(x, y, nameC); // начальная точка
 
     // Основной цикл
     length++;
@@ -51,24 +63,139 @@ void line_DDA(float x1, float y1, float x2, float y2, COLORREF cColor) {
         y += dY;
         putpixel(roundf(x), roundf(y), cColor);
     }
-
+    outtextxy(x, y, nameD); // конечная точка
 }
+
+// отрисовка линии функцией
+void drawLine(float x1, float y1, float x2, float y2, COLORREF cColor, char* nameA, char* nameB) {
+    setcolor(cColor); // циан 3 или 11
+    line(x1, y1, x2, y2);
+    outtextxy(x1, y1, nameA);
+    outtextxy(x2, y2, nameB);
+}
+
+// горизонтальное движение
+void moveLinesX(Point& A, Point& B, Point& C, Point& D, float amt, COLORREF col1, char* nameA, char* nameB, COLORREF col2, char* nameC, char* nameD) {
+    A.x += amt;
+    B.x += amt;
+    C.x += amt;
+    D.x += amt; 
+    cleardevice();
+    drawLine(A.x, A.y, B.x, B.y, col1, nameA, nameB);
+    line_DDA(C.x, C.y, D.x, D.y, col2, nameC, nameD);
+} 
+
+// вертикальное движение
+void moveLinesY(Point& A, Point& B, Point& C, Point& D, float amt, COLORREF col1, char* nameA, char* nameB, COLORREF col2, char* nameC, char* nameD) {
+    A.y += amt; 
+    B.y += amt; 
+    C.y += amt; 
+    D.y += amt; 
+    cleardevice();
+    drawLine(A.x, A.y, B.x, B.y, col1, nameA, nameB);
+    line_DDA(C.x, C.y, D.x, D.y, col2, nameC, nameD);
+}
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+float mashtabs(float a, float b, float e) { //Функция для масштабирования.
+    float xe = (b + a) / 2;
+    float l = b - a;
+    l = l * e;
+    a = xe - l / 2;
+    return a;
+}
+float mashtabe(float a, float b, float e) { //Функция для масштабирования.
+    float xe = (b + a) / 2;
+    float l = b - a;
+    l = l * e;
+    b = xe + l / 2;
+    return b;
+}
+
+float rotatelinex(float a, float b, float u) { // Функция для поворота точки относительно x.
+    float d = cos(u * P / 180); float f = sin(u * P / 180);
+    float rot = a * d - b * f; return rot;
+}
+float rotateliney(float a, float b, float u) { // Функция для поворота точки относительно y.
+    float d = cos(u * P / 180); float f = sin(u * P / 180);
+    float rot = a * f + b * d; return rot;
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 
 
 
 int main()
 {
-    initwindow(1400, 700); // создаём консольное окно 500 на 500
+    int col1 = 11; // для 1 линии циан 11
+    int col2 = 10; // для 2 линии зелёный 2 или 10
 
-    //setcolor(14); // жёлтый 14
-    //line(50, 100, 100, 300);
+    Point A, B, C, D;
+    A.x = 20; A.y = 250;
+    B.x = 400; B.y = 50;
+    C.x = 100; C.y = 50;
+    D.x = 500; D.y = 350;
 
-    // линия 1
-    setcolor(11); // циан 3 или 11
-    line(20, 250, 400, 50);
+    char *nameA, *nameB, *nameC, *nameD;
+    char name_A[2] = "A", name_B[2] = "B", name_C[2] = "C", name_D[2] = "D";
+    nameA = name_A; nameB = name_B; nameC = name_C; nameD = name_D;
 
-    // линия 2
-    line_DDA(100, 50, 500, 350, 10); // зелёный 2 или 10
+
+    initwindow(1400, 700); // создаём консольное окно 1400 на 700
+
+    drawLine(A.x, A.y, B.x, B.y, col1, nameA, nameB); // линия 1
+    line_DDA(C.x, C.y, D.x, D.y, col2, nameC, nameD); // линия 2
+
+    // управление
+    int i = 1; // условие выхода
+    while (i) {
+        switch (getch()) {
+        case 'w':
+            cout << 'w' << endl;
+            moveLinesY(A, B, C, D, -10, col1, nameA, nameB, col2, nameC, nameD); // вверх
+            break;
+        case 'a':
+            cout << 'a' << endl;
+            moveLinesX(A, B, C, D, -10, col1, nameA, nameB, col2, nameC, nameD); // влево
+            break;
+        case 's':
+            cout << 's' << endl;
+            moveLinesY(A, B, C, D, 10, col1, nameA, nameB, col2, nameC, nameD); // вниз
+            break;
+        case 'd':
+            cout << 'd' << endl;
+            moveLinesX(A, B, C, D, 10, col1, nameA, nameB, col2, nameC, nameD); // вправо
+            break;
+        case 'q':
+            cout << 'q' << endl;
+            // против часовой
+            break;
+        case 'e':
+            cout << 'e' << endl;
+            // по часовой
+            break;
+        case '=':
+            cout << '+' << endl;
+            // увеличение
+            break;
+        case '-':
+            cout << '-' << endl;
+            // уменьшение
+            break;
+        default:
+            cout << "default -> exit" << endl;
+            i = 0;
+            break;
+        }
+    }
+    
 
 
 
