@@ -100,10 +100,43 @@ void moveLinesY(Point& A, Point& B, Point& C, Point& D, float amt, COLORREF col1
 
 
 
+void rotPointsCounter(Point& A, Point& B) { // что-то не так. описывает какой-то эллипс
+
+
+    // мб это круг? мб переместить б в 00 и а относительно, прокрутить а и вернуть?
+
+
+
+    int u = 1;
+    float d = cos(u * P / 180);
+    float f = sin(u * P / 180);
+    A.x = A.x * d - A.y * f;
+    A.y = A.x * f + A.y * d;
+
+    /*
+    u = -1;
+    d = cos(u * P / 180);
+    f = sin(u * P / 180);
+    B.x = B.x * d - B.y * f;
+    B.y = B.x * d + B.y * f;
+    */
+}
+
+void rotLinesCounter(Point& A, Point& B, Point& C, Point& D, COLORREF col1, char* nameA, char* nameB, COLORREF col2, char* nameC, char* nameD) {
+    rotPointsCounter(A, B);
+    //rotPointsCounter(C, D);
+
+    moveLinesX(A, B, C, D, 0, col1, nameA, nameB, col2, nameC, nameD); // отрисовка
+}
+
+
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 float mashtabs(float a, float b, float e) { //Функция для масштабирования.
-    float xe = (b + a) / 2;
+    float xe = (b + a) / 2; // середина отрезка
     float l = b - a;
     l = l * e;
     a = xe - l / 2;
@@ -118,12 +151,16 @@ float mashtabe(float a, float b, float e) { //Функция для масшта
 }
 
 float rotatelinex(float a, float b, float u) { // Функция для поворота точки относительно x.
-    float d = cos(u * P / 180); float f = sin(u * P / 180);
-    float rot = a * d - b * f; return rot;
+    float d = cos(u * P / 180); 
+    float f = sin(u * P / 180);
+    float rot = a * d - b * f; 
+    return rot;
 }
 float rotateliney(float a, float b, float u) { // Функция для поворота точки относительно y.
-    float d = cos(u * P / 180); float f = sin(u * P / 180);
-    float rot = a * f + b * d; return rot;
+    float d = cos(u * P / 180); 
+    float f = sin(u * P / 180);
+    float rot = a * f + b * d; 
+    return rot;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -175,7 +212,7 @@ int main()
             break;
         case 'q':
             cout << 'q' << endl;
-            // против часовой
+            rotLinesCounter(A, B, C, D, col1, nameA, nameB, col2, nameC, nameD); // против часовой
             break;
         case 'e':
             cout << 'e' << endl;
