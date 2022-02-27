@@ -4,8 +4,8 @@
 // + подписать
 // + связать с клавой
 // + переместить
-// - повернуть
-// - масштабировать
+// + повернуть
+// + масштабировать
 
 #include <iostream>
 #include <math.h>
@@ -14,7 +14,6 @@
 #define P 3.14
 
 using namespace std;
-
 
 
 // класс для точек
@@ -74,6 +73,7 @@ void drawLine(float x1, float y1, float x2, float y2, COLORREF cColor, char* nam
     outtextxy(x2, y2, nameB);
 }
 
+
 // горизонтальное движение
 void moveLinesX(Point& A, Point& B, Point& C, Point& D, float amt, COLORREF col1, char* nameA, char* nameB, COLORREF col2, char* nameC, char* nameD) {
     A.x += amt;
@@ -97,75 +97,52 @@ void moveLinesY(Point& A, Point& B, Point& C, Point& D, float amt, COLORREF col1
 }
 
 
+// поворот одной динии
+void rotate(Point& A, Point& B, float ang) { 
+    Point tmpA = A, tmpB = B;
+    A.x = A.x - B.x; // расстояние от а до б по х
+    A.y = A.y - B.y; // по у
 
+    // делает круг вокруг нк, размер норм
+    float tmpX = A.x * cos(ang) + A.y * sin(ang);
+    float tmpY = -A.x * sin(ang) + A.y * cos(ang);    
 
-
-void rotPointsCounter(Point& A, Point& B) { // что-то не так. описывает какой-то эллипс
-
-
-    // мб это круг? мб переместить б в 00 и а относительно, прокрутить а и вернуть?
-
-
-
-    int u = 1;
-    float d = cos(u * P / 180);
-    float f = sin(u * P / 180);
-    A.x = A.x * d - A.y * f;
-    A.y = A.x * f + A.y * d;
-
-    /*
-    u = -1;
-    d = cos(u * P / 180);
-    f = sin(u * P / 180);
-    B.x = B.x * d - B.y * f;
-    B.y = B.x * d + B.y * f;
-    */
+    A.x = tmpX + B.x;
+    A.y = tmpY + B.y;
 }
 
-void rotLinesCounter(Point& A, Point& B, Point& C, Point& D, COLORREF col1, char* nameA, char* nameB, COLORREF col2, char* nameC, char* nameD) {
-    rotPointsCounter(A, B);
-    //rotPointsCounter(C, D);
+// поворот двух линий
+void rotLines(int u, Point& A, Point& B, Point& C, Point& D, COLORREF col1, char* nameA, char* nameB, COLORREF col2, char* nameC, char* nameD) {
+    rotate(A, B, u * 0.05);
+    rotate(C, D, u * 0.05);
 
     moveLinesX(A, B, C, D, 0, col1, nameA, nameB, col2, nameC, nameD); // отрисовка
 }
 
 
+// масштаб одной линии
+void scalePoints(Point& A, Point& B, float e) { 
+    if ((abs(A.x - B.x) >= 2 && abs(A.y - B.y) >= 2) || e > 1) { // предотвращение сжатия в точку
+        float xe = (B.x + A.x) / 2;
+        float lx = B.x - A.x;
+        lx = lx * e;
+        A.x = xe - lx / 2;
 
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-float mashtabs(float a, float b, float e) { //Функция для масштабирования.
-    float xe = (b + a) / 2; // середина отрезка
-    float l = b - a;
-    l = l * e;
-    a = xe - l / 2;
-    return a;
-}
-float mashtabe(float a, float b, float e) { //Функция для масштабирования.
-    float xe = (b + a) / 2;
-    float l = b - a;
-    l = l * e;
-    b = xe + l / 2;
-    return b;
+        float ye = (B.y + A.y) / 2;
+        float ly = B.y - A.y;
+        ly = ly * e;
+        A.y = ye - ly / 2;
+    }
+    
 }
 
-float rotatelinex(float a, float b, float u) { // Функция для поворота точки относительно x.
-    float d = cos(u * P / 180); 
-    float f = sin(u * P / 180);
-    float rot = a * d - b * f; 
-    return rot;
+// масштаб двух линий
+void scaleLines(int u, Point& A, Point& B, Point& C, Point& D, COLORREF col1, char* nameA, char* nameB, COLORREF col2, char* nameC, char* nameD) {
+    scalePoints(A, B, u);
+    scalePoints(C, D, u);
+
+    moveLinesX(A, B, C, D, 0, col1, nameA, nameB, col2, nameC, nameD); // отрисовка
 }
-float rotateliney(float a, float b, float u) { // Функция для поворота точки относительно y.
-    float d = cos(u * P / 180); 
-    float f = sin(u * P / 180);
-    float rot = a * f + b * d; 
-    return rot;
-}
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
 
 
 
@@ -212,19 +189,19 @@ int main()
             break;
         case 'q':
             cout << 'q' << endl;
-            rotLinesCounter(A, B, C, D, col1, nameA, nameB, col2, nameC, nameD); // против часовой
+            rotLines(1, A, B, C, D, col1, nameA, nameB, col2, nameC, nameD); // против часовой
             break;
         case 'e':
             cout << 'e' << endl;
-            // по часовой
+            rotLines(-1, A, B, C, D, col1, nameA, nameB, col2, nameC, nameD); // по часовой
             break;
         case '=':
             cout << '+' << endl;
-            // увеличение
+            scaleLines(2, A, B, C, D, col1, nameA, nameB, col2, nameC, nameD); // увеличение
             break;
         case '-':
             cout << '-' << endl;
-            // уменьшение
+            scaleLines(0.9, A, B, C, D, col1, nameA, nameB, col2, nameC, nameD); // уменьшение
             break;
         default:
             cout << "default -> exit" << endl;
@@ -233,10 +210,6 @@ int main()
         }
     }
     
-
-
-
-
 
     getch(); // чтение одного символа с клавиатуры
     closegraph(); // освобождает всю память,выделенную под графическую систему, затем восстанавливает экран в режим, который    был   до   вызова   initgraph
